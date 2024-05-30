@@ -1,0 +1,71 @@
+{
+    "name": "atlantis-react-ts",
+    "version": "9.0.0",
+    "homepage": ".",
+    "private": true,
+    "dependencies": {
+        "@amcharts/amcharts4": "^4.10.38",
+        "@amcharts/amcharts5": "^5.9.1",
+        "@amcharts/amcharts5-geodata": "^5.1.2",
+        "@fullcalendar/core": "^6.1.4",
+        "@fullcalendar/daygrid": "^6.1.4",
+        "@fullcalendar/interaction": "^6.1.4",
+        "@fullcalendar/react": "^6.1.4",
+        "@fullcalendar/timegrid": "^6.1.4",
+        "@types/node": "^18.14.6",
+        "@types/react": "^18.0.28",
+        "@types/react-dom": "^18.0.11",
+        "@types/react-router-dom": "^5.3.3",
+        "@types/react-transition-group": "^4.4.5",
+        "@types/webrtc": "^0.0.36",
+        "axios": "^1.4.0",
+        "chart.js": "4.2.1",
+        "file-saver": "^2.0.5",
+        "jspdf": "^2.5.1",
+        "jspdf-autotable": "^3.5.31",
+        "moment-timezone": "^0.5.45",
+        "primeflex": "^3.3.0",
+        "primeicons": "^6.0.1",
+        "primereact": "^9.2.0",
+        "react": "^18.2.0",
+        "react-dom": "^18.2.0",
+        "react-moment": "^1.1.3",
+        "react-query": "^3.39.3",
+        "react-router-dom": "6.8.2",
+        "react-scripts": "^5.0.1",
+        "react-transition-group": "^4.4.5",
+        "sass": "^1.58.3",
+        "web-vitals": "^3.1.1",
+        "xlsx": "^0.18.5"
+    },
+    "scripts": {
+        "start": "react-scripts start",
+        "build": "GENERATE_SOURCEMAP=false react-scripts build",
+        "test": "react-scripts test",
+        "eject": "react-scripts eject",
+        "format": "prettier --write \"src/**/*.{js,ts,tsx}\""
+    },
+    "eslintConfig": {
+        "extends": [
+            "react-app",
+            "react-app/jest"
+        ]
+    },
+    "browserslist": {
+        "production": [
+            ">0.2%",
+            "not dead",
+            "not op_mini all"
+        ],
+        "development": [
+            "last 1 chrome version",
+            "last 1 firefox version",
+            "last 1 safari version"
+        ]
+    },
+    "devDependencies": {
+        "cross-env": "^7.0.3",
+        "prettier": "2.8.4",
+        "typescript": "^5.4.5"
+    }
+}

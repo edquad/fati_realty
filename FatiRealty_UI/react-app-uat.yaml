@@ -1,0 +1,195 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: uca-app-uat
+    sdr.appname: uca-app-uat
+  name: uca-app-uat
+spec:
+  replicas: 1
+  revisionHistoryLimit: 2
+  selector:
+    matchLabels:
+      app: uca-app-uat
+  template:
+    metadata:
+      labels:
+        app: uca-app-uat
+        sdr.appname: uca-app-uat
+    spec:
+      containers:
+        - image: docker.apple.com/varun_pande/uca-app-uat:0.2.2
+          name: uca-app-uat
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 80
+              name: web
+              protocol: TCP
+          resources:
+            limits:
+              cpu: "1"
+              memory: 2Gi
+            requests:
+              cpu: "1"
+              memory: 1Gi
+        - image: docker.apple.com/isdteam/beta/appleconnect-proxy:2.2.242.d0bdafb
+          name: appleconnect-proxy
+          imagePullPolicy: Always
+          args:
+          - "--enable-oidc-authentication"
+          - "--idms-bypass-uris=/__alive"
+          - "--port=8081"
+          - "--endpoint=http://localhost:80"
+          - "--oidc-client-id=q1twqh7fksppk4hfdfulqohgkhuoms"
+          - "--oidc-client-secret=xjyxdeaksnhxcqh7btrz"
+          # CHANGEME
+          - "--oidc-cookie-name=uca-app-uat-acp-oidc-token"
+          - "--oidc-issuer=https://idmsac-uat.corp.apple.com"
+          # CHANGEME -- but leave the /__login part as-is else risk endless login loops
+          - "--oidc-redirect-url=https://uca-app-uat.us-west-3g.app.apple.com/"
+          env:
+            - name: OIDC_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: auth-proxy-env
+                  key: UAT_OIDC_CLIENT_ID
+            - name: OIDC_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: auth-proxy-env
+                  key: UAT_OIDC_CLIENT_SECRET
+          ports:
+          - name: proxy
+            containerPort: 8081
+            protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /__health
+              port: proxy
+            initialDelaySeconds: 5
+            timeoutSeconds: 30
+          resources:
+            limits:
+              cpu: 250m
+              memory: 256Mi
+            requests:
+              cpu: 100m
+              memory: 64Mi
+      priorityClassName: p3
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    kubernetes.io/ingress.class: "plb.v1"
+  labels:
+    app: uca-app-uat
+  name: uca-app-uat.us-west-3g.app.apple.com
+  namespace: cda
+spec:
+  defaultBackend:
+    service:
+      name: uca-app-uat
+      port: 
+        number: 80
+---
+apiVersion: pie.apple.com/v1alpha1
+kind: AppleNetworkPolicy
+metadata:
+  name: whitelist-snip-uca-app-uat
+spec:
+  selector:
+    app: uca-app-uat
+  apps_incoming:
+    - app: plb.pie-plb.pie-prod
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: uca-app-uat
+  labels:
+    app: uca-app-uat
+    sdr.appname: uca-app-uat
+spec:
+  ports:
+    - name: web
+      port: 80
+      protocol: TCP
+      targetPort: 80
+  selector:
+    app: uca-app-uat
+    sdr.appname: uca-app-uat
+---
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: nginx-config
+data:
+  nginx.conf: |
+    events {
+    }
+    http {
+      include /etc/nginx/mime.types;
+      log_format main_timed '$remote_addr - $remote_user [$time_local] "$request" '
+                            '$status $body_bytes_sent "$http_referer" '
+                            '"$http_user_agent" "$http_x_forwarded_for" '
+                            '$request_time $upstream_response_time $pipe $upstream_cache_status';
+      access_log /dev/stdout main_timed;
+      error_log /dev/stderr notice;
+      keepalive_timeout 65;
+      add_header X-Content-Type-Options nosniff;
+      add_header X-Frame-Options DENY;
+      add_header X-XSS-Protection "1; mode=block";
+      add_header Content-Security-Policy "default-src 'self'; img-src https://*; child-src 'none'";
+      server {
+        listen 80;
+        # Set nginx to serve files from the shared volume!
+        root /usr/share/nginx/html;
+        index index.html;
+        server_name _;
+        location / {
+          try_files $uri $uri/ /index.html =404;
+        }
+        location /__health {
+          return 200 "OK\n";
+        }
+      }
+    }
+---
+# apiVersion: v1
+# kind: ConfigMap
+# metadata:
+#   name: node-api-app-uat-daw-configmap
+#   labels:
+#     component: config
+#     team: CDA_Dev
+# data:
+#   kube-daw.yml: |
+#     server:
+#       proxyPortEnvVar: PORT
+#       appHost: 127.0.0.1
+#       appPort: 8080
+#       bypassHeaders:
+#         - Authorization
+#     appleConnect:
+#       appId: 199812
+#       cookie: acack-uat
+#       idmsHost: https://idmsac-uat.corp.apple.com
+#       baseUrl: https://uca-app-uat.us-west-3g.app.apple.com
+#       rv: 2
+#       func:
+#         - prsId
+#         - firstName
+#         - lastName
+#         - emailAddress
+#         - acAccountName
+# ---
+# apiVersion: v1
+# kind: Secret
+# metadata:
+#   name: node-api-app-uat-daw-secrets
+# type: Opaque
+# data:
+#   ac-app-id-key: dedafb975afcb5c816a4cf43814834890616b13cd416826496b31e9792622388
+#   ac-app-admin-pass: 54nawc5kz33dz6xb

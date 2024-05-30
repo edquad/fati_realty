@@ -1,0 +1,160 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: uca-app
+    sdr.appname: uca-app
+  name: uca-app
+spec:
+  replicas: 1
+  revisionHistoryLimit: 2
+  selector:
+    matchLabels:
+      app: uca-app
+  template:
+    metadata:
+      labels:
+        app: uca-app
+        sdr.appname: uca-app
+    spec:
+      containers:
+        - image: docker.apple.com/varun_pande/uca-app:0.2.2
+          name: uca-app
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 80
+              name: web
+              protocol: TCP
+          resources:
+            limits:
+              cpu: "2"
+              memory: 4Gi
+            requests:
+              cpu: "1"
+              memory: 2Gi
+        - image: docker.apple.com/isdteam/beta/appleconnect-proxy:2.2.242.d0bdafb
+          name: appleconnect-proxy
+          imagePullPolicy: Always
+          args:
+          - "--enable-oidc-authentication"
+          - "--idms-bypass-uris=/__alive"
+          - "--port=8081"
+          - "--endpoint=http://localhost:80"
+          - "--oidc-client-id=cwmhdxrpasv29xsm9zbrr2ws9zdjdn"
+          - "--oidc-client-secret=wvkmbhqcavtrgymz7crx"
+          # CHANGEME
+          - "--oidc-cookie-name=uca-app-acp-oidc-token"
+          - "--oidc-issuer=https://idmsac.apple.com"
+          # CHANGEME -- but leave the /__login part as-is else risk endless login loops
+          - "--oidc-redirect-url=https://uca-app.us-west-3g.app.apple.com/"
+          env:
+            - name: OIDC_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: auth-proxy-env
+                  key: PROD_OIDC_CLIENT_ID
+            - name: OIDC_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: auth-proxy-env
+                  key: PROD_OIDC_CLIENT_SECRET
+          ports:
+          - name: proxy
+            containerPort: 8081
+            protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /__health
+              port: proxy
+            initialDelaySeconds: 5
+            timeoutSeconds: 30
+          resources:
+            limits:
+              cpu: 250m
+              memory: 256Mi
+            requests:
+              cpu: 100m
+              memory: 64Mi
+      priorityClassName: p3
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    kubernetes.io/ingress.class: "plb.v1"
+  labels:
+    app: uca-app
+  name: uca-app.us-west-3g.app.apple.com
+  namespace: cda
+spec:
+  defaultBackend:
+    service:
+      name: uca-app
+      port: 
+        number: 80
+---
+apiVersion: pie.apple.com/v1alpha1
+kind: AppleNetworkPolicy
+metadata:
+  name: whitelist-snip-uca-app
+spec:
+  selector:
+    app: uca-app
+  apps_incoming:
+    - app: plb.pie-plb.pie-prod
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: uca-app
+  labels:
+    app: uca-app
+    sdr.appname: uca-app
+spec:
+  ports:
+    - name: web
+      port: 80
+      protocol: TCP
+      targetPort: 80
+  selector:
+    app: uca-app
+    sdr.appname: uca-app
+---
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: nginx-config
+data:
+  nginx.conf: |
+    events {
+    }
+    http {
+      include /etc/nginx/mime.types;
+      log_format main_timed '$remote_addr - $remote_user [$time_local] "$request" '
+                            '$status $body_bytes_sent "$http_referer" '
+                            '"$http_user_agent" "$http_x_forwarded_for" '
+                            '$request_time $upstream_response_time $pipe $upstream_cache_status';
+      access_log /dev/stdout main_timed;
+      error_log /dev/stderr notice;
+      keepalive_timeout 65;
+      add_header X-Content-Type-Options nosniff;
+      add_header X-Frame-Options DENY;
+      add_header X-XSS-Protection "1; mode=block";
+      add_header Content-Security-Policy "default-src 'self'; img-src https://*; child-src 'none'";
+      server {
+        listen [::]:80 default_server;
+        listen 80 default_server;
+        
+        # Set nginx to serve files from the shared volume!
+        root /usr/share/nginx/html;
+        index index.html;
+        server_name _;
+        location / {
+          try_files $uri $uri/ /index.html =404;
+        }
+        location /__health {
+          return 200 "OK\n";
+        }
+      }
+    }

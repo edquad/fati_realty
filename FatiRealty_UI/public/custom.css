@@ -1,0 +1,163 @@
+.p-accordion-header-text {
+    overflow: hidden;
+}
+.borderStyle {
+    border: 1px solid #676767;
+    box-shadow: none !important;
+}
+.icon {
+    background-size: 40px 40px;
+    background-repeat: no-repeat;
+    width: 40px;
+    height: 40px;
+    display: inline-block;
+}
+.fixdGridHoverBG0 thead tr th {
+    background: #292939 !important;
+}
+.fixdGridHoverBG0 thead tr:hover {
+    background: #292939;
+}
+#loginDialog .p-dialog-header-icon {
+    display: none !important;
+}
+/* div.btnBox {
+    pointer-events: none;
+}
+.btnHover {
+    pointer-events: auto;
+}
+.btnHover:hover {
+    cursor: pointer;
+}
+.btnBox:hover {
+    flex-direction: column !important;
+    align-content: flex-start !important;
+} */
+
+/* ======================= */
+
+.TDSFRecencyAudit,
+.TBAT,
+.TDSnowflakeAudit,
+.TDSFAudits,
+.TucsonToSnowflake {
+    display: none;
+}
+.hoverView {
+    width: 100%;
+    min-height: 410px;
+    padding: 20px;
+}
+body:has(.btnTDSFRecencyAuditHover:hover) .TDSFRecencyAudit {
+    display: block;
+}
+body:has(.btnTBATHover:hover) .TBAT {
+    display: block;
+}
+body:has(.btnTDSnowflakeAuditHover:hover) .TDSnowflakeAudit {
+    display: block;
+}
+body:has(.btnTDSFAuditsHover:hover) .TDSFAudits {
+    display: block;
+}
+body:has(.btnTucsonToSnowflakeHover:hover) .TucsonToSnowflake {
+    display: block;
+}
+
+.iphone {
+    background-image: url(../assets/images/icons/iphone.svg);
+}
+.watch {
+    background-image: url(../assets/images/icons/watch.svg);
+}
+.macbook {
+    background-image: url(../assets/images/icons/macbook.svg);
+}
+.ipad {
+    background-image: url(../assets/images/icons/ipad.svg);
+}
+.homepod {
+    background-image: url(../assets/images/icons/homepod.svg);
+}
+.airpods {
+    background-image: url(../assets/images/icons/airpods.svg);
+}
+.appletv {
+    background-image: url(../assets/images/icons/appletv.svg);
+}
+.cpu {
+    background-image: url(../assets/images/icons/cpu.svg);
+}
+.ipodtouch {
+    background-image: url(../assets/images/icons/ipodtouch.svg);
+}
+
+.p-datatable > .p-datatable-wrapper::-webkit-scrollbar-track {
+    border-radius: 20px;
+    background-color: rgba(49, 49, 49, 0.9);
+}
+
+.p-datatable > .p-datatable-wrapper::-webkit-scrollbar {
+    width: 12px;
+    border-radius: 20px;
+    background-color: transparent;
+}
+
+.p-datatable > .p-datatable-wrapper::-webkit-scrollbar-thumb {
+    border-radius: 20px;
+    background-color: rgba(66, 66, 66, 0.8);
+}
+
+#RemoveTabviewNavContainerBorder .p-tabview-nav-container {
+    display: none;
+}
+
+.btns {
+    color: #ffffff !important;
+    border: 1px solid;
+    border-radius: 15px;
+    cursor: pointer;
+    padding: 0.5rem 1.4rem;
+    font-size: 1.11rem !important;
+    font-weight: 400 !important;
+    margin: 0px 2px;
+    background: none;
+}
+.btns:hover {
+    opacity: 0.9;
+    cursor: pointer !important;
+    box-shadow: none;
+}
+.btn-cancel {
+    border-color: #fc6161;
+}
+.btn-net {
+    border-color: #0bd18a;
+}
+.btn-gross {
+    border-color: #0f8bfd;
+}
+.btn-Return {
+    border-color: #ffea05;
+}
+
+.progress-container {
+    position: relative;
+    height: 20px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 6px 
+}
+
+.progress-bar {
+    height: 100%;
+}
+
+.value-label {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    color: white;
+}
+

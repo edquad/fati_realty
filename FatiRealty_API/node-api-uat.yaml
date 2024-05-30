@@ -1,0 +1,153 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: node-api-app-uat
+    sdr.appname: node-api-app-uat
+  name: node-api-app-uat
+spec:
+  replicas: 1
+  revisionHistoryLimit: 2
+  selector:
+    matchLabels:
+      app: node-api-app-uat
+  template:
+    metadata:
+      labels:
+        app: node-api-app-uat
+        sdr.appname: node-api-app-uat
+    spec:
+      containers:
+        - image: docker.apple.com/varun_pande/node_api_app_uat:0.2.2
+          name: node-api-app-uat
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+              name: web
+              protocol: TCP
+          resources:
+            limits:
+              cpu: "1"
+              memory: 2Gi
+            requests:
+              cpu: "1"
+              memory: 1Gi
+      priorityClassName: p3
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    kubernetes.io/ingress.class: "plb.v1"
+  labels:
+    app: node-api-app-uat
+  name: node-api-app-uat.us-west-3g.app.apple.com
+  namespace: cda
+spec:
+  defaultBackend:
+    service:
+      name: node-api-app-uat
+      port: 
+        number: 8080
+---
+apiVersion: pie.apple.com/v1alpha1
+kind: AppleNetworkPolicy
+metadata:
+  name: whitelist-snip-node-api-app-uat
+spec:
+  selector:
+    app: node-api-app-uat
+  apps_incoming:
+    - app: plb.pie-plb.pie-prod
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: node-api-app-uat
+  labels:
+    app: node-api-app-uat
+    sdr.appname: node-api-app-uat
+spec:
+  ports:
+    - name: web
+      port: 8080
+      protocol: TCP
+      targetPort: 8080
+  selector:
+    app: node-api-app-uat
+    sdr.appname: node-api-app-uat
+# ---
+# apiVersion: v1
+# kind: ConfigMap
+# metadata:
+#   name: node-api-app-uat-daw-configmap
+#   labels:
+#     component: config
+#     team: CDA_Dev
+# data:
+#   kube-daw.yml: |
+#     server:
+#       proxyPortEnvVar: PORT
+#       appHost: 127.0.0.1
+#       appPort: 8080
+#       bypassHeaders:
+#         - Authorization
+#     appleConnect:
+#       appId: 199812
+#       cookie: acack-uat
+#       idmsHost: https://idmsac-uat.corp.apple.com
+#       baseUrl: https://uca-app-uat.us-west-3g.app.apple.com
+#       rv: 2
+#       func:
+#         - prsId
+#         - firstName
+#         - lastName
+#         - emailAddress
+#         - acAccountName
+# ---
+# apiVersion: v1
+# kind: Secret
+# metadata:
+#   name: node-api-app-uat-daw-secrets
+# type: Opaque
+# data:
+#   ac-app-id-key: dedafb975afcb5c816a4cf43814834890616b13cd416826496b31e9792622388
+#   ac-app-admin-pass: 54nawc5kz33dz6xb
+# ---
+# apiVersion: v1
+# kind: ConfigMap
+# metadata:
+#   name: node-api-app-uat-daw-configmap
+#   labels:
+#     component: config
+#     team: CDA_Dev
+# data:
+#   kube-daw.yml: |
+#     server:
+#       proxyPortEnvVar: PORT
+#       appHost: 127.0.0.1
+#       appPort: 8080
+#       bypassHeaders:
+#         - Authorization
+#     appleConnect:
+#       appId: 199812
+#       cookie: acack-uat
+#       idmsHost: https://idmsac-uat.corp.apple.com
+#       baseUrl: https://uca-app-uat.us-west-3g.app.apple.com
+#       rv: 2
+#       func:
+#         - prsId
+#         - firstName
+#         - lastName
+#         - emailAddress
+#         - acAccountName
+# ---
+# apiVersion: v1
+# kind: Secret
+# metadata:
+#   name: node-api-app-uat-daw-secrets
+# type: Opaque
+# data:
+#   ac-app-id-key: dedafb975afcb5c816a4cf43814834890616b13cd416826496b31e9792622388
+#   ac-app-admin-pass: 54nawc5kz33dz6xb

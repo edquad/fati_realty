@@ -1,0 +1,53 @@
+config:
+  target: 'http://localhost:3000'
+  ensure:
+    p95: 5000
+    maxErrorRate: 0
+  phases:
+    - duration: 60
+      arrivalRate: 1
+      rampTo: 50
+      name: "Warm up"
+    - duration: 60
+      arrivalRate: 50
+      name: "Sustained load"
+scenarios:
+  - flow:
+    -get:
+        url: "/GetapiData/Recency_GetTile1Data"
+-get:
+        url: "/GetapiData/Recency_GetTile3Data"
+        -get:
+         url: "/GetapiData/Recency_GetTile3Data" 
+         -get:
+          url: "/GetapiData/Recency_GetTile3GridData"
+          -get:
+           url: "/GetapiData/Recency_GetTile4Data" 
+           -get:
+            url: "/GetapiData/Recency_GetTile4GridData"
+            -get:
+                url: "/GetapiData/UCAAPP_GetTileData"
+                -get:
+                   url: "/GetapiData/UCAAPP_GetOPPROCESSCONSTANT"  
+                   -get:
+                     url: "/GetapiData/Recency_GetGrid2BytableName?TD_TABLE_NAME=TD_TABLE_NAME"  
+                     -get:
+                         url: "/GetapiData/Insides_GetAccountUsage_Schema"  
+                         -get:
+                           url: "/GetapiData/Uca_Cell_GetCountryList"  
+                           -get:
+                              url: "/GetapiData/Uca_Cell_Getsegment_desc" 
+                              -get:
+                               url: "/GetapiData/Uca_Cell_GetFISCAL_QUARTER" 
+                               -get:
+                                url: "/GetapiData/Uca_Cell_GetFISCAL_YEAR" 
+                                -get:
+                                 url: "/GetapiData/Uca_Cell_Getmarket_generation" 
+                                 -get:
+                                    url: "/GetapiData/getTucsonDataReport" 
+                                    -get:
+                                      url: "/GetapiData/configurationGetBUData" 
+                                      -get:
+                                       url: "/GetapiData/configurationGetblaneytucsonmetadataconfig"
+          
+   
